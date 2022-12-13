@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import RegisterForm, EditProfileForm
 from django.contrib.auth.forms import UserChangeForm
-
+# csrf_token = ''
 @login_required
 def profile_view(request):
     context = {}
@@ -56,6 +56,8 @@ def home_view(request):
     return render(request, 'home.html', context)
 
 
+
+
 def login_view(request):
     error_message = None
     form = AuthenticationForm()
@@ -65,10 +67,13 @@ def login_view(request):
         user = authenticate(username = username, password=password)
         if user is not None:
             login(request, user)
+            
+            # csrf_token = django.middleware.csrf.get_token(request)
+            
             if request.GET.get('next'):
                 return redirect(request.GET.get('next'))
             else:
-                return redirect('home-view')
+                return redirect('http://127.0.0.1:5173/')
         else:
             error_message = 'Incorrect Password and/or Username.'
     return render(request, 'login.html', {'form': form, 'error_message': error_message})
@@ -77,5 +82,7 @@ def login_view(request):
 
 @login_required
 def logout_view(request):
+    print('logout requested')
     logout(request)
     return redirect('home-view')
+

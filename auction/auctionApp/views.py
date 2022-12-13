@@ -6,7 +6,22 @@ from .models import Item
 from .models import User
 
 def index(request):
-    return HttpResponse("Auction App.")
+    return HttpResponse("LISTINGS PAGE GO HERE.")
+
+
+def user_api(request):
+    cur_user = request.user
+    if cur_user.is_anonymous:
+        return JsonResponse({
+            'cur_user_data' : 'not logged in'
+        })
+    else:
+        return JsonResponse({
+            'cur_user_data' : cur_user.to_dict()
+            })
+        
+
+##########################################
 
 def postQuestion(request, item_id, asker_id):
     if request.method == "POST":
@@ -136,3 +151,11 @@ def placeBid(request, item_id):
 
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
+
+def listings_api(request) -> HttpResponse:
+    itemData = Item.objects.all
+    return JsonResponse({
+        'item': [
+            item.to_dict() for item in Item.objects.all()
+        ]
+    })

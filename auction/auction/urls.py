@@ -7,9 +7,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("listings/", include("auctionApp.urls")),
+    path("", include("auctionApp.urls")),
     path('home/', home_view, name = 'home-view'),
-    path('', login_view, name= 'login'),
+    path('login', login_view, name= 'login'),
     path('logout/', logout_view, name= 'logout'),
     path('register/', reg_view, name= 'register'),
     path('editProfile/', edit_profile_view, name= 'editProfile'),

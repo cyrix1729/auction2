@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+import json
 
 # # Inherits from django's AbstractUser model
 class User(AbstractUser):
@@ -11,12 +12,22 @@ class User(AbstractUser):
     DOB = models.DateField(null=True)
     # Profile picture
     image = models.ImageField(upload_to='profile_pic', default='default.png')
-    
-
 
     def __str__(self):
         return self.username
+    
+    def to_dict(self):
+        return {
+            'email': self.email,
+            'username': self.username,
+            'DOB': self.DOB,
+            'image':json.dumps(str(self.image))
+        }
 
+    def get_username(self):
+        return self.username
+    
+    
 class Item(models.Model):
     # name
     name = models.CharField(max_length=50)
@@ -42,6 +53,21 @@ class Item(models.Model):
 
     def newBid(self, value):
         cur_price = value
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'desc': self.desc,
+            'start_time': self.start_time,
+            'end_time': self.end_time,
+            'start_price': self.start_price,
+            'cur_price': self.cur_price,
+            ##'image': self.image,
+            ##'seller': self.seller,
+        }
+
+
 
 # class Listings(models.Model):
 
