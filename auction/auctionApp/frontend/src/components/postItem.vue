@@ -26,7 +26,8 @@ import { VueElement } from 'vue';
                     console.log("uwu")
                         const res = await fetch('http://localhost:8000/postItem', { 
                             method: "post",
-                            body : formData, 
+                            body : formData,
+                            'credentials': "include",
                         });
 
                         if (!res.ok) {

@@ -28,9 +28,10 @@
                     answer: (this.$refs.post_answer as any).value,
                 }
                 try {
-                    const res = await fetch(`http://localhost:8000/postAnswer/${this.questionId}`, 
+                    const res = await fetch(`http://localhost:8000/postAnswer/${this.questionId}`,
                         { method: "post", headers: {"Content-Type": "application/json"}, 
-                        body : JSON.stringify(postData)
+                        body : JSON.stringify(postData),
+                        'credentials': "include",
                     });
                     if (!res.ok) {
                         const message = `An error has occured: ${res.status} - ${res.statusText}`;

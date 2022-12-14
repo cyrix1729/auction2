@@ -197,9 +197,25 @@ def placeBid(request, item_id):
 ##########################################
 
 def listings_api(request) -> HttpResponse:
-    itemData = Item.objects.all
+
+    item = Item.objects.all()
+    items = []
+    for i in item:
+        print('awoo')
+        j = i.to_dict()
+        print(j)
+        j['seller'] = list(User.objects.filter(id = i.seller_id).values('id'))
+        items.append(j)
+
+    data = {
+        'item': items
+    }
+
+    return JsonResponse(data)
+    """itemData = Item.objects.all()
     return JsonResponse({
         'item': [
             item.to_dict() for item in Item.objects.all()
-        ]
-    })
+        ],
+
+    })"""

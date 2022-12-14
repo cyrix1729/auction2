@@ -21,7 +21,8 @@ import { defineComponent, ref } from 'vue';
                             method: "post", headers: {
                                 "Content-Type": "application/json"
                             }, 
-                            body : JSON.stringify(postData)
+                            body : JSON.stringify(postData),
+                            'credentials': "include",
                         });
 
                         if (!res.ok) {

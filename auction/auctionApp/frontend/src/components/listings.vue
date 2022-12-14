@@ -10,7 +10,9 @@
             End Time: {{ element.end_time }}<br>
             Starting Price: {{ element.start_price }}<br>
             Current Price: {{ element.cur_price }} <br>
-            
+            <div v-if="element.seller[0].id == this.userId">
+                <PostQuestion v-bind:itemId="element.id" v-bind:userId="element.id"/>
+            </div>
             
         </p>
         </ul> 
@@ -19,34 +21,35 @@
   
   <script lang="ts">
   import Vue from 'vue';
+import PostQuestion from './postQuestion.vue';
     export default {
-        data(){
-            return {
-                items: [] ,
-                active: false,
+    data() {
+        return {
+            userId: null,
+            items: [],
+            active: false,
+        };
+    },
+    created() {
+        this.fetchListings();
+    },
+    methods: {
+        async fetchListings() {
+            try {
+                let response = await fetch("http://localhost:8000/api/listings/", {
+                    "credentials": "include",
+                });
+                let data = await response.json();
+                this.items = data;
+                console.log(data);
+                this.active = true;
             }
-        },
-        created(){
-            this.fetchListings()
-        },
-  
-        methods: {
-            
-            async fetchListings(){
-                try{
-                    let response = await fetch('http://localhost:8000/api/listings/')
-                    let data = await response.json()
-                    this.items = data
-                    console.log(this.items)
-                    this.active = true;
-                }
-                    catch(error){
-                        console.log(error)
-                    }
-  
+            catch (error) {
+                console.log(error);
             }
-  
         }
-      }
+    },
+    components: { PostQuestion }
+}
   
   </script>

@@ -14,7 +14,8 @@
 
                 try {
                     console.log(this.showFullData);
-                    const res = await fetch(`http://localhost:8000/getItem/${this.itemId}`, { method: "get"});
+                    const res = await fetch(`http://localhost:8000/getItem/${this.itemId}`, { method: "get",
+                        'credentials': "include",});
                     if (!res.ok) {
                         const message = `An error has occured: ${res.status} - ${res.statusText}`;
                         throw new Error(message);

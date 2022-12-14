@@ -11,7 +11,8 @@ import GetItem from './getItem.vue';
     methods: {
         async getQuestionsAskedToUser() {
             try {
-                const res = await fetch(`http://localhost:8000/getQuestionsAskedToUser/${this.userId}`, { method: "get" });
+                const res = await fetch(`http://localhost:8000/getQuestionsAskedToUser/${this.userId}`, { method: "get",
+                        'credentials': "include", });
                 if (!res.ok) {
                     const message = `An error has occured: ${res.status} - ${res.statusText}`;
                     throw new Error(message);
