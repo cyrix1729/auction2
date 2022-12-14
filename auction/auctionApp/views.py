@@ -1,9 +1,12 @@
-from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
-from .models import Question
-from .models import Item
-from .models import User
+from .models import *
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.utils.timezone import make_aware
+from datetime import datetime
+from django.http import HttpResponseBadRequest
+from django.shortcuts import render
 
 def index(request):
     return HttpResponse("LISTINGS PAGE GO HERE.")
@@ -22,20 +25,8 @@ def user_api(request):
         
 
 ##########################################
-
-def postQuestion(request, item_id, asker_id):
-    if request.method == "POST":
-        postData = json.loads(requests.body.decode("utf-8"))
-
-        _asker = User.objects.get(id = asker_id)
-        _item = Item.objects.get(id = item_id)
-        _question = postData.get('question')
-
-        Question.objects.create(question = _question, asker = _asker, item = _item)
-        response = JsonResponse({'status' : 'question posted'})
-
-        return response
-    return HttpResponseBadRequest('Invalid request')
+#Stuff By Steph
+##########################################
 
 def getQuestion(request, question_id):
     if request.method == "GET":
@@ -59,6 +50,33 @@ def getUserQuestions(request, user_id):
 
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
+    
+def getQuestionsAskedToUser(request, user_id):
+    if request.method == "GET":
+        data = {}
+        if User.objects.filter(id = user_id).exists():
+            _seller = User.objects.get(id = user_id)
+            items = Item.objects.filter(seller = _seller).values('id')
+
+            for i in items:
+                _question = Question.objects.filter(item__id = i.get('id'))
+                if (_question.exists()):
+                    data[i.get('id')] = {
+                        'question' : list(_question.values('id', 'question', 'answer')), 
+                        'itemId' : i.get('id')
+                    }
+
+            if len(data) <= 0:
+                data = {
+                    'ObjectsFound' : False
+                }
+            else:
+                data['ObjectsFound'] = True
+
+        else:
+            data['ObjectsFound'] = False
+        return JsonResponse(data)
+    return HttpResponseBadRequest('Invalid request')
 
 def getItemQuestions(request, item_id):
     if request.method == "GET":
@@ -73,15 +91,50 @@ def getItemQuestions(request, item_id):
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
 
+
+def getItem(request, item_id):
+    if request.method == "GET":
+        item = Item.objects.filter(id = item_id)
+
+        itemData = item.values('name', 'desc', 'start_time', 'end_time',
+            'start_price', 'cur_price')
+
+        data = {
+            'item' : list(itemData),
+            'seller' : list(User.objects.filter(
+                id = item.values('seller')[0]['seller']
+                ).values('first_name', 'last_name'))
+        }
+
+        return JsonResponse(data)
+    return HttpResponseBadRequest('Invalid request')
+
+@csrf_exempt
+def postQuestion(request, item_id):
+    if request.method == "POST":
+        postData = json.loads(request.body.decode("utf-8"))
+        print("posting question to database")
+        _asker = User.objects.get(id = postData.get('userId', None))
+        _item = Item.objects.get(id = item_id)
+        _question = postData.get('question', None)
+
+        Question.objects.create(question = _question, asker = _asker, item = _item)
+        response = JsonResponse({'status' : 'question posted'})
+
+        return response
+    return HttpResponseBadRequest('Invalid request')
+
+
+@csrf_exempt
 def postAnswer(request, question_id):
     if request.method == "POST":
         question = Question.objects.get(id = question_id)
-
         postData = json.loads(request.body.decode("utf-8"))
 
         _answer = postData.get('answer')
 
-        question.newAnswer(_answer)
+        question.answer = _answer
+        question.save()
 
         data = {
             'updated' : True
@@ -90,45 +143,32 @@ def postAnswer(request, question_id):
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
 
-
-def postItem(request, seller_id):
+@csrf_exempt
+def postItem(request):
     if request.method == "POST":
-        postData = json.loads(request.body.decode("utf-8"))
+        _image = request.FILES.get('file')
+        _name = request.POST.get('name')
+        _desc = request.POST.get('desc')
+        _start_time = make_aware(datetime.fromisoformat(request.POST.get('startTime')))
+        _end_time = make_aware(datetime.fromisoformat(request.POST.get('endTime')))
+        _start_price = request.POST.get('startPrice')
 
-        _name = postData.get('name')
-        _desc = postData.get('description')
-        _start_time = postData.get('startTime')
-        _end_time = postData.get('endTime')
-        _start_price = postData.get('startPrice')
-        _cur_price = postData.get('currentPrice')
-        _image = postData.get('image')
-        _seller = postData.get('seller')
+
+        _seller = User.objects.get(id = request.POST.get('seller'))
 
         Item.objects.create(name = _name, desc = _desc,
-            start_time = _start_time, end_time = _end_time,
-            cur_price = _cur_price, image = _image, seller = _seller)
+            start_time = _start_time, end_time = _end_time, 
+            start_price = _start_price, cur_price = _start_price,
+            image = _image, seller = _seller)
 
         data = {
-            'status' : 'user added'
+            'status' : 'item added'
         }
 
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
 
-def getItem(request, item_id):
-    if request.method == "POST":
-        item = Item.objects.get(id = item_id)
-
-        itemData = item.values('name', 'desc', 'start_time', 'end_time',
-         'start_price', 'cur_price', 'image', 'seller')
-
-        data = {
-            'item' : itemData
-        }
-
-        return JsonResponse(data)
-    return HttpResponseBadRequest('Invalid request')
-
+@csrf_exempt
 def placeBid(request, item_id):
     if request.method == "POST":
         item = Item.objects.get(id = item_id)
@@ -151,6 +191,10 @@ def placeBid(request, item_id):
 
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
+
+##########################################
+#End of Stuff by Steph
+##########################################
 
 def listings_api(request) -> HttpResponse:
     itemData = Item.objects.all

@@ -42,7 +42,7 @@ class Item(models.Model):
     #current bid
     cur_price = models.DecimalField(max_digits= 8, decimal_places= 2)
     #image of item
-    image = models.ImageField()
+    image = models.ImageField(upload_to='listing_pictures')
     #seller of item
     seller = models.ForeignKey(User, on_delete = models.CASCADE )
 
@@ -52,7 +52,7 @@ class Item(models.Model):
         return self.name
 
     def newBid(self, value):
-        cur_price = value
+        self.cur_price = value
 
     def to_dict(self):
         return {
@@ -82,4 +82,4 @@ class Question(models.Model):
         return self.question
 
     def newAnswer(self, value):
-        answer = value
+        self.answer = value
