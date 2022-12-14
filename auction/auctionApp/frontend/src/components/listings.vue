@@ -1,21 +1,20 @@
 <template>
-    <div><button @click="fetchListings">Fetch Listings</button>
       <div>
         <ul v-if="active">
-            <p v-for="i in 4" :key="i">
-            Description: {{ items.item[i].desc }}
-            Start Time: {{ items.item[i].start_time }}
-            End Time: {{ items.item[i].end_time }}
-            Starting Price: {{ items.item[i].start_price }}
-            Current Price: {{ items.item[i].cur_price }}
+            <h1>Listings</h1> 
+            <button> Profile </button>
+            <input required placeholder= 'search' />
+            <p v-for = "element in items.item">
+            Description: {{ element.desc }}<br>
+            Start Time: {{ element.start_time }}<br>
+            End Time: {{ element.end_time }}<br>
+            Starting Price: {{ element.start_price }}<br>
+            Current Price: {{ element.cur_price }} <br>
             
             
-            </p>
-            
-           
+        </p>
         </ul> 
       </div>
-    </div>
   </template>
   
   <script lang="ts">
@@ -27,12 +26,12 @@
                 active: false,
             }
         },
+        created(){
+            this.fetchListings()
+        },
   
         methods: {
-            // numberOfItems(itemsX){
-            //     return itemsX.length
-            // },
-
+            
             async fetchListings(){
                 try{
                     let response = await fetch('http://localhost:8000/api/listings/')
