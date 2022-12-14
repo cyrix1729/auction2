@@ -10,7 +10,7 @@
             End Time: {{ element.end_time }}<br>
             Starting Price: {{ element.start_price }}<br>
             Current Price: {{ element.cur_price }} <br>
-            <div v-if="element.seller[0].id == this.userId">
+            <div v-if="element.seller[0].id != this.userId">
                 <PostQuestion v-bind:itemId="element.id" v-bind:userId="element.id"/>
             </div>
             
