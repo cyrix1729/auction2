@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.db.models import Q
 from .models import *
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -28,19 +29,28 @@ def user_api(request):
 #Stuff By Steph
 ##########################################
 
-def getQuestion(request, question_id):
+def getQuestion(request, itemId):
     if request.method == "GET":
-        questionData = Question.objects.filter(id = question_id).values()
+        cur_user = request.user
+        isOwner = False
+
+        if cur_user == Item.objects.get(id = itemId).seller:
+            isOwner = True
+
+        questionData = Question.objects.filter(item_id = itemId).values()
 
         data = {
-            'answer' : list(questionData)
+            'answer' : list(questionData),
+            'isOwner' : isOwner
         }
 
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
 
-def getUserQuestions(request, user_id):
+def getUserQuestions(request):
     if request.method == "GET":
+        cur_user = request.user
+        user_id = (int)(request.user.id)
         questionData = Question.objects.filter(asker__id=user_id).values('id', 'question', 'answer')
         
         data = {}
@@ -51,8 +61,10 @@ def getUserQuestions(request, user_id):
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
     
-def getQuestionsAskedToUser(request, user_id):
+def getQuestionsAskedToUser(request):
     if request.method == "GET":
+        cur_user = request.user
+        user_id = (int)(request.user.id)
         data = {}
         if User.objects.filter(id = user_id).exists():
             _seller = User.objects.get(id = user_id)
@@ -112,9 +124,10 @@ def getItem(request, item_id):
 @csrf_exempt
 def postQuestion(request, item_id):
     if request.method == "POST":
+        cur_user = request.user
         postData = json.loads(request.body.decode("utf-8"))
         print("posting question to database")
-        _asker = User.objects.get(id = postData.get('userId', None))
+        _asker = User.objects.get(id = request.user.id)
         _item = Item.objects.get(id = item_id)
         _question = postData.get('question', None)
 
@@ -146,6 +159,7 @@ def postAnswer(request, question_id):
 @csrf_exempt
 def postItem(request):
     if request.method == "POST":
+        cur_user = request.user
         _image = request.FILES.get('file')
         _name = request.POST.get('name')
         _desc = request.POST.get('desc')
@@ -154,7 +168,7 @@ def postItem(request):
         _start_price = request.POST.get('startPrice')
 
 
-        _seller = User.objects.get(id = request.POST.get('seller'))
+        _seller = User.objects.get(id = (int)(cur_user.id))
 
         Item.objects.create(name = _name, desc = _desc,
             start_time = _start_time, end_time = _end_time, 
@@ -171,6 +185,7 @@ def postItem(request):
 @csrf_exempt
 def placeBid(request, item_id):
     if request.method == "POST":
+        cur_user = request.user
         item = Item.objects.get(id = item_id)
 
         postData = json.loads(request.body.decode("utf-8"))
@@ -178,9 +193,13 @@ def placeBid(request, item_id):
         _bid = postData.get('bid')
 
         data = {}
+        currentTime = make_aware(datetime.now())
+        if (int)(_bid) > item.cur_price and item.end_time > currentTime and item.start_time < currentTime:
+            item.cur_price = _bid
+            item.save()
+            Bid.objects.create(bidder = User.objects.get(id = cur_user.id), value = _bid,
+            item = Item.objects.get(id = item_id))
 
-        if _bid > item.cur_price:
-            item.newBid(_bid)
             data = {
                 'status' : 'bid placed'
             }
@@ -189,6 +208,8 @@ def placeBid(request, item_id):
                 'status' : 'ivalid bid'
             }
 
+        print((str)(data))
+
         return JsonResponse(data)
     return HttpResponseBadRequest('Invalid request')
 
@@ -196,14 +217,16 @@ def placeBid(request, item_id):
 #End of Stuff by Steph
 ##########################################
 
-def listings_api(request) -> HttpResponse:
+def listings_api(request, searchData) -> HttpResponse:
 
     item = Item.objects.all()
+
+    if searchData != "-":
+        item = Item.objects.all().filter(Q(name__icontains=searchData) | Q(desc__icontains=searchData))
+    
     items = []
     for i in item:
-        print('awoo')
         j = i.to_dict()
-        print(j)
         j['seller'] = list(User.objects.filter(id = i.seller_id).values('id'))
         items.append(j)
 

@@ -2,7 +2,6 @@
 import { VueElement } from 'vue';
 
     export default {
-        props: ['userId'],
         data() {
             return {
                 getResult: null,
@@ -20,7 +19,6 @@ import { VueElement } from 'vue';
                 const form = document.getElementById('postItem');
                 const formData = new FormData(form as any);
                 formData.append('file', (this.file as any));
-                formData.append('seller', this.userId);
 
                 try {
                     console.log("uwu")
@@ -45,9 +43,6 @@ import { VueElement } from 'vue';
                             },
                             data: data,
                         };
-
-                        console.log(data)
-                        console.log(result);
 
                         this.getResult = data;
 

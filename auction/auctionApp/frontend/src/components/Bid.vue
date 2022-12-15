@@ -7,25 +7,27 @@
             }
         },
         methods: {
-            async postQuestion() {
+            async postBid() {
                 const postData = {
-                    question: (this.$refs.post_question as any).value,
+                    bid: (this.$refs.post_bid as any).value,
                 }
                 try {
-                    console.log(JSON.stringify(postData))
-                    if (postData.question) {
-                        const res = await fetch(`http://localhost:8000/postQuestion/${this.itemId}`, { 
-                            method: "post", headers: {
+                    if (postData.bid != null) {
+                        console.log((this.itemId as number));
+                        const res = await fetch(`http://localhost:8000/placeBid/${(this.itemId as number)}`, { 
+                            method: "post", 
+                            headers: {
                                 "Content-Type": "application/json"
                             }, 
                             body : JSON.stringify(postData),
                             'credentials': "include",
                         });
                         if (!res.ok) {
+                            
                             const message = `An error has occured: ${res.status} - ${res.statusText}`;
                             throw new Error(message);
                         }
-                        
+
                         const data = await res.json();
 
                         const result = {
@@ -53,13 +55,12 @@
 <template>
   <header>
     <div class="">
-        <b>please post your question</b>
-        <form id="postQuestion" action="">
+        <form id="postBid" action="">
             <div class="form-group">
-                <input class="form-control" type="text" name="name" ref="post_question" placeholder="put your question here" required/>
+                <input class="form-control" type="number" name="bid" ref="post_bid" placeholder="10" required/>
             </div>
             <div class="form-group">
-                <button class="btn btn-primary" @click="postQuestion">SUBMIT</button>
+                <button class="btn btn-primary" @click="postBid">SUBMIT BID</button>
             </div>
         </form>
       </div>

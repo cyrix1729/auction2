@@ -27,7 +27,8 @@ class User(AbstractUser):
     def get_username(self):
         return self.username
     
-    
+
+
 class Item(models.Model):
     # name
     name = models.CharField(max_length=50)
@@ -45,6 +46,7 @@ class Item(models.Model):
     image = models.ImageField(upload_to='listing_pictures')
     #seller of item
     seller = models.ForeignKey(User, on_delete = models.CASCADE )
+    
 
 
 
@@ -83,3 +85,13 @@ class Question(models.Model):
 
     def newAnswer(self, value):
         self.answer = value
+
+
+
+class Bid(models.Model):
+    #highest bider
+    bidder = models.ForeignKey(User, on_delete= models.CASCADE)
+    #bid
+    value = models.DecimalField(max_digits= 8, decimal_places= 2)
+    #item
+    item = models.ForeignKey(Item, on_delete = models.CASCADE )

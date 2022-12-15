@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Item, Question
+from .models import User, Item, Question, Bid
 from .forms import RegisterForm
 from django.contrib.auth.admin import UserAdmin
 
@@ -25,3 +25,4 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(Item)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Question)
+admin.site.register(Bid)

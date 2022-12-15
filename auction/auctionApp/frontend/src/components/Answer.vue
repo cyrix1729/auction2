@@ -49,9 +49,6 @@
                         data: data,
                     };
 
-                    console.log(data)
-                    console.log(result);
-
                     this.getResult = data;
 
                 } catch (err) {
